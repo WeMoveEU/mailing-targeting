@@ -75,9 +75,9 @@ class CRM_Mailingtargeting_Form_Search_MailingTarget extends CRM_Contact_Form_Se
    */
   function select() {
     return "
-      c.id            as contact_id,
-      c.contact_type  as contact_type,
-      c.sort_name     as sort_name
+      contact_a.id            as contact_id,
+      contact_a.contact_type  as contact_type,
+      contact_a.sort_name     as sort_name
     ";
   }
 
@@ -88,7 +88,7 @@ class CRM_Mailingtargeting_Form_Search_MailingTarget extends CRM_Contact_Form_Se
    */
   function from() {
     return "
-      FROM civicrm_contact c 
+      FROM civicrm_contact contact_a
       JOIN civicrm_group_contact gc ON gc.contact_id=contact_a.id
     ";
   }
