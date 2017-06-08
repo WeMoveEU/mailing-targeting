@@ -9,6 +9,14 @@ class CRM_Mailingtargeting_Form_Search_MailingTarget extends CRM_Contact_Form_Se
     parent::__construct($formValues);
   }
 
+  static function options($values, $key, $display) {
+    $result = array();
+    foreach ($values as $i => $val) {
+      $result[$val[$key]] = $val[$display];
+    }
+    return $result;
+  }
+
   /**
    * Prepare a set of search fields
    *
@@ -19,8 +27,25 @@ class CRM_Mailingtargeting_Form_Search_MailingTarget extends CRM_Contact_Form_Se
 
     $this->setTitle(ts('Mailing targeting'));
 
-    $form->assign('groups', CRM_Contact_BAO_Group::getGroups());
-    $form->assign('mailings', CRM_Mailing_PseudoConstant::completed());
+		$mailings = civicrm_api3('Mailing', 'get', array(
+      'sequential' => 1,
+      'return' => array("id", "name"),
+      'is_completed' => 1,
+      'scheduled_date' => array('>=' => date("Y-m-d", time() - 3 * 30 * 24 * 60 * 60)),
+      'name' => array('NOT LIKE' => "%--CAMP-ID-%"),
+      'options' => array('limit' => 1000),
+    ));
+    $form->assign('mailings', static::options($mailings['values'], 'id', 'name'));
+
+		$groups = civicrm_api3('Group', 'get', array(
+      'sequential' => 1,
+      'return' => array("id", "title"),
+      'is_active' => 1,
+      'title' => array('NOT LIKE' => "%--CAMP-ID-%"),
+      'options' => array('limit' => 500),
+    ));
+    $form->assign('groups', static::options($groups['values'], 'id', 'title'));
+
     $form->assign('campaigns', CRM_Campaign_BAO_Campaign::getCampaigns());
   }
 
