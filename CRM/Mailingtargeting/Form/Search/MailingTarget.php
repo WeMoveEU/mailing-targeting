@@ -115,41 +115,88 @@ class CRM_Mailingtargeting_Form_Search_MailingTarget extends CRM_Contact_Form_Se
    * @return string, sql fragment with FROM and JOIN clauses
    */
   function from() {
-    $includeIds = $this->_formValues['include'];
-    $from = "FROM civicrm_contact contact_a";
-    $groupIds = array();
-    $mailingIds = array();
-    $signIds = array();
-    
-    foreach ($includeIds as $id) {
-      if (strpos($id, 'gid-') === 0) { //Group
-        $groupIds[] = intval(substr($id, 4));
-      } else if (strpos($id, 'mid-') === 0) { //Mailing
-        $mailingIds[] = intval(substr($id, 4));
-      } else if (strpos($id, 'sign-cid-') === 0) { //Signature
-        $signIds[] = substr($id, 9);
-      }
-    }
-    
-    $smartGroups = static::smartGroups($groupIds);
-    foreach ($groupIds as $gid) {
-      $tbl = "gc$gid";
+    $from = "FROM civicrm_contact contact_a"
+        . $this->includeJoins()
+        . $this->excludeJoins();
+
+    return $from;
+  }
+
+  /**
+   * Construct the JOIN queries to match the include conditions
+   */
+  public function includeJoins() {
+    $from = "";
+    $includeIds = static::splitIds($this->_formValues['include']);
+
+    $smartGroups = static::smartGroups($includeIds['groups']);
+    foreach ($includeIds['groups'] as $gid) {
+      $tbl = "iGC$gid";
       if (in_array($gid, $smartGroups)) {
-        $tblName = "civicrm_group_contact_cache";
+        $tblJoin = "civicrm_group_contact_cache $tbl ON";
       } else {
-        $tblName = "civicrm_group_contact";
+        $tblJoin = "civicrm_group_contact $tbl ON $tbl.status='Added' AND";
       }
-      $from .= " JOIN $tblName $tbl ON $tbl.group_id=$gid AND $tbl.contact_id=contact_a.id";
+      $from .= " JOIN $tblJoin $tbl.group_id=$gid AND $tbl.contact_id=contact_a.id";
     }
-    foreach ($mailingIds as $mid) {
-      $tbl = "mr$mid";
+
+    foreach ($includeIds['mailings'] as $mid) {
+      $tbl = "iMR$mid";
       $from .= " JOIN civicrm_mailing_recipients $tbl ON $tbl.mailing_id=$mid AND $tbl.contact_id=contact_a.id";
     }
-    foreach ($signIds as $cid) {
-      $tbl = "act$cid";
+
+    foreach ($includeIds['signs'] as $cid) {
+      $tbl = "iACT$cid";
       $from .= " JOIN civicrm_activity $tbl ON $tbl.campaign_id=$cid AND $tbl.activity_type_id=32";
       $from .= " JOIN civicrm_activity_contact ct$tbl ON ct$tbl.activity_id=$tbl.id AND ct$tbl.contact_id=contact_a.id";
     }
+
+    return $from;
+  }
+
+  /**
+   * Construct the LEFT JOIN queries to match the exclude conditions
+   */
+  public function excludeJoins() {
+    $from = "";
+    $excludeIds = static::splitIds($this->_formValues['exclude']);
+    $this->_excludeTables = array();
+
+    if (!empty($excludeIds['groups'])) {
+      $smartGroups = static::smartGroups($excludeIds['groups']);
+      $plainGroups = array_diff($excludeIds['groups'], $smartGroups);
+      if (!empty($plainGroups)) {
+        $tbl = "xG";
+        $this->_excludeTables[] = $tbl;
+        $gids = implode(',', $plainGroups);
+        $from .= " LEFT JOIN civicrm_group_contact $tbl ON $tbl.group_id IN ($gids) AND $tbl.contact_id=contact_a.id AND $tbl.status='Added'";
+      }
+      if (!empty($smartGroups)) {
+        $tbl = "xSG";
+        $this->_excludeTables[] = $tbl;
+        $gids = implode(',', $smartGroups);
+        $from .= " LEFT JOIN civicrm_group_contact_cache $tbl ON $tbl.group_id IN ($gids) AND $tbl.contact_id=contact_a.id";
+      }
+    }
+
+    if (!empty($excludeIds['mailings'])) {
+      $tbl = "xMR";
+      $this->_excludeTables[] = $tbl;
+      $mids = implode(',', $excludeIds['mailings']);
+      $from .= " LEFT JOIN civicrm_mailing_recipients $tbl ON $tbl.mailing_id IN ($mids) AND $tbl.contact_id=contact_a.id";
+    }
+
+    if (!empty($excludeIds['signs'])) {
+      $tbl = "xACT";
+      $this->_excludeTables[] = $tbl;
+      $cids = implode(',', $excludeIds['signs']);
+      $from .= " LEFT JOIN ("
+            .  "   SELECT ct$tbl.id, ct$tbl.contact_id "
+            .  "   FROM civicrm_activity_contact ct$tbl "
+            .  "   JOIN civicrm_activity a$tbl ON a$tbl.campaign_id IN ($cids) AND a$tbl.id=ct$tbl.activity_id"
+            .  " ) $tbl ON $tbl.contact_id=contact_a.id";
+    }
+
     return $from;
   }
 
@@ -160,7 +207,34 @@ class CRM_Mailingtargeting_Form_Search_MailingTarget extends CRM_Contact_Form_Se
    * @return string, sql fragment with conditional expressions
    */
   function where($includeContactIDs = FALSE) {
-    return "1=1";
+    foreach ($this->_excludeTables as $tbl) {
+      $where[] = "$tbl.id IS NULL";
+    }
+    if (empty($where)) {
+      return "1=1";
+    } else {
+      return implode(" OR ", $where);
+    }
+  }
+
+  protected static function splitIds($ids) {
+    $result = array(
+      'groups' => array(),
+      'mailings' => array(),
+      'signs' => array(),
+    );
+    
+    foreach ($ids as $id) {
+      if (strpos($id, 'gid-') === 0) { //Group
+        $result['groups'][] = intval(substr($id, 4));
+      } else if (strpos($id, 'mid-') === 0) { //Mailing
+        $result['mailings'][] = intval(substr($id, 4));
+      } else if (strpos($id, 'sign-cid-') === 0) { //Signature
+        $result['signs'][] = intval(substr($id, 9));
+      }
+    }
+
+    return $result;
   }
 
   /**

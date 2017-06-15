@@ -62,7 +62,7 @@
                 <select name="exclude[]" class="crm-select2" multiple="multiple" style="width: 100%">
                     <optgroup label="{ts}Groups{/ts}">
                         {foreach from=$groups key=gid item=group}
-                            <option value="gid-{$gid}">{ts}In group:{/ts} {$group->title}</option>
+                            <option value="gid-{$gid}">{ts}In group:{/ts} {$group}</option>
                         {/foreach}
                     </optgroup>
                     <optgroup label="{ts}Mailings{/ts}">
