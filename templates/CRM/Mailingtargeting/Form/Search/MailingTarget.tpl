@@ -35,7 +35,7 @@
                 <label>{ts}Include contacts with ALL these conditions{/ts}</label>
             </div>
             <div>
-                <select name="include" class="crm-select2" multiple="multiple" style="width: 100%">
+                <select name="include[]" class="crm-select2" multiple="multiple" style="width: 100%">
                     <optgroup label="{ts}Groups{/ts}">
                         {foreach from=$groups key=gid item=group}
                             <option value="gid-{$gid}">{ts}In group:{/ts} {$group}</option>
@@ -59,7 +59,7 @@
                 <label>{ts}Exclude contacts with ANY of these conditions{/ts}</label>
             </div>
             <div>
-                <select name="exclude" class="crm-select2" multiple="multiple" style="width: 100%">
+                <select name="exclude[]" class="crm-select2" multiple="multiple" style="width: 100%">
                     <optgroup label="{ts}Groups{/ts}">
                         {foreach from=$groups key=gid item=group}
                             <option value="gid-{$gid}">{ts}In group:{/ts} {$group->title}</option>

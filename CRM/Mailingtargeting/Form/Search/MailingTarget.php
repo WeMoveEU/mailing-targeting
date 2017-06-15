@@ -47,6 +47,9 @@ class CRM_Mailingtargeting_Form_Search_MailingTarget extends CRM_Contact_Form_Se
     $form->assign('groups', static::options($groups['values'], 'id', 'title'));
 
     $form->assign('campaigns', CRM_Campaign_BAO_Campaign::getCampaigns());
+
+    $form->add('select', 'include', ts('Include contacts'), NULL, FALSE, array('multiple' => TRUE));
+    $form->add('select', 'exclude', ts('Exclude contacts'), NULL, FALSE, array('multiple' => TRUE));
   }
 
   /**
@@ -112,10 +115,42 @@ class CRM_Mailingtargeting_Form_Search_MailingTarget extends CRM_Contact_Form_Se
    * @return string, sql fragment with FROM and JOIN clauses
    */
   function from() {
-    return "
-      FROM civicrm_contact contact_a
-      JOIN civicrm_group_contact gc ON gc.contact_id=contact_a.id
-    ";
+    $includeIds = $this->_formValues['include'];
+    $from = "FROM civicrm_contact contact_a";
+    $groupIds = array();
+    $mailingIds = array();
+    $signIds = array();
+    
+    foreach ($includeIds as $id) {
+      if (strpos($id, 'gid-') === 0) { //Group
+        $groupIds[] = intval(substr($id, 4));
+      } else if (strpos($id, 'mid-') === 0) { //Mailing
+        $mailingIds[] = intval(substr($id, 4));
+      } else if (strpos($id, 'sign-cid-') === 0) { //Signature
+        $signIds[] = substr($id, 9);
+      }
+    }
+    
+    $smartGroups = static::smartGroups($groupIds);
+    foreach ($groupIds as $gid) {
+      $tbl = "gc$gid";
+      if (in_array($gid, $smartGroups)) {
+        $tblName = "civicrm_group_contact_cache";
+      } else {
+        $tblName = "civicrm_group_contact";
+      }
+      $from .= " JOIN $tblName $tbl ON $tbl.group_id=$gid AND $tbl.contact_id=contact_a.id";
+    }
+    foreach ($mailingIds as $mid) {
+      $tbl = "mr$mid";
+      $from .= " JOIN civicrm_mailing_recipients $tbl ON $tbl.mailing_id=$mid AND $tbl.contact_id=contact_a.id";
+    }
+    foreach ($signIds as $cid) {
+      $tbl = "act$cid";
+      $from .= " JOIN civicrm_activity $tbl ON $tbl.campaign_id=$cid AND $tbl.activity_type_id=32";
+      $from .= " JOIN civicrm_activity_contact ct$tbl ON ct$tbl.activity_id=$tbl.id AND ct$tbl.contact_id=contact_a.id";
+    }
+    return $from;
   }
 
   /**
@@ -125,7 +160,23 @@ class CRM_Mailingtargeting_Form_Search_MailingTarget extends CRM_Contact_Form_Se
    * @return string, sql fragment with conditional expressions
    */
   function where($includeContactIDs = FALSE) {
-    return "gc.group_id=886";
+    return "1=1";
+  }
+
+  /**
+   * From a list of group ids, return the list of ids of those that are smart groups
+   */
+  public static function smartGroups($groups) {
+    $smartGroups = array();
+    if (!empty($groups)) {
+      $groups = CRM_Contact_BAO_Group::getGroups(array('id' => $groups));
+      foreach ($groups as $group) {
+        if ($group->saved_search_id) {
+          $smartGroups[] = $group->id;
+        }
+      }
+    }
+    return $smartGroups;
   }
 
   /**
