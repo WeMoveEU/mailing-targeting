@@ -24,6 +24,33 @@
  +--------------------------------------------------------------------+
 *}
 
+{literal}
+<style>
+  .common-choices li {
+    list-style: none;
+    display: inline-block;
+    background-color: #e4e4e4;
+    border: 1px solid #aaa;
+    margin: 0 3px;
+    padding: 2px;
+    cursor: pointer;
+  }
+</style>
+<script>
+CRM.$(function($) {
+  $('.common-choices li').on('click', function() {
+    $select = $(this).parents('.crm-section').find('select');
+    var val = $(this).attr('data-val');
+    var values = $select.select2('val') || [];
+    if (values.indexOf(val) < 0) {
+      values.push(val);
+    }
+    $select.select2('val', values);
+  });
+});
+</script>
+{/literal}
+
 <div class="crm-block crm-form-block crm-contact-custom-search-form-block">
 <div class="crm-accordion-wrapper crm-custom_search_form-accordion {if $rows}collapsed{/if}">
     <div class="crm-accordion-header crm-master-accordion-header">
@@ -59,6 +86,14 @@
                     </optgroup>
                 </select>
             </div>
+            <div>
+              <label>{ts}Common conditions{/ts}</label>
+              <ul class="common-choices">
+                {foreach from=$commonIncludes item=g}
+                  <li data-val="gid-{$g->id}">{$g->title}</li>
+                {/foreach}
+              </ul>
+            </div>
         </div>
         <div class="crm-section">
             <div>
@@ -88,6 +123,14 @@
                         {/foreach}
                     </optgroup>
                 </select>
+            </div>
+            <div>
+              <label>{ts}Common conditions{/ts}</label>
+              <ul class="common-choices">
+                {foreach from=$commonExcludes item=g}
+                  <li data-val="gid-{$g->id}">{$g->title}</li>
+                {/foreach}
+              </ul>
             </div>
         </div>
         <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>

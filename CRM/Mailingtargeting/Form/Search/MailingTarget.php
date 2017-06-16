@@ -50,6 +50,14 @@ class CRM_Mailingtargeting_Form_Search_MailingTarget extends CRM_Contact_Form_Se
 
     $form->add('select', 'include', ts('Include contacts'), NULL, FALSE, array('multiple' => TRUE));
     $form->add('select', 'exclude', ts('Exclude contacts'), NULL, FALSE, array('multiple' => TRUE));
+
+    $commonIncludes = explode(',', Civi::settings()->get('mailingtargeting_commonIncludes'));
+    $groups = CRM_Contact_BAO_Group::getGroups(array('id' => $commonIncludes));
+    $form->assign('commonIncludes', $groups);
+
+    $commonExcludes = explode(',', Civi::settings()->get('mailingtargeting_commonExcludes'));
+    $groups = CRM_Contact_BAO_Group::getGroups(array('id' => $commonExcludes));
+    $form->assign('commonExcludes', $groups);
   }
 
   /**
