@@ -65,21 +65,21 @@ CRM.$(function($) {
                 <select name="include[]" class="crm-select2" multiple="multiple" style="width: 100%">
                     <optgroup label="{ts}Groups{/ts}">
                         {foreach from=$groups key=gid item=group}
-                            <option value="gid-{$gid}" {if in_array("gid-$gid", $form.include.value)}selected{/if}>
+                            <option value="gid-{$gid}" {if !empty($form.include.value) && in_array("gid-$gid", $form.include.value)}selected{/if}>
                               {ts}In group:{/ts} {$group}
                             </option>
                         {/foreach}
                     </optgroup>
                     <optgroup label="{ts}Mailings{/ts}">
                         {foreach from=$mailings key=mid item=mailing}
-                            <option value="mid-{$mid}" {if in_array("mid-$mid", $form.include.value)}selected{/if}>
+                            <option value="mid-{$mid}" {if !empty($form.include.value) && in_array("mid-$mid", $form.include.value)}selected{/if}>
                               {ts}Received:{/ts} {$mailing}
                             </option>
                         {/foreach}
                     </optgroup>
                     <optgroup label="{ts}Signatures{/ts}">
                         {foreach from=$campaigns key=cid item=campaign}
-                            <option value="sign-cid-{$cid}" {if in_array("sign-cid-$cid", $form.include.value)}selected{/if}>
+                            <option value="sign-cid-{$cid}" {if !empty($form.include.value) && in_array("sign-cid-$cid", $form.include.value)}selected{/if}>
                               {ts}Signed:{/ts} {$campaign}
                             </option>
                         {/foreach}
@@ -103,21 +103,21 @@ CRM.$(function($) {
                 <select name="exclude[]" class="crm-select2" multiple="multiple" style="width: 100%">
                     <optgroup label="{ts}Groups{/ts}">
                         {foreach from=$groups key=gid item=group}
-                            <option value="gid-{$gid}" {if in_array("gid-$gid", $form.exclude.value)}selected{/if}>
+                            <option value="gid-{$gid}" {if !empty($form.include.value) && in_array("gid-$gid", $form.exclude.value)}selected{/if}>
                               {ts}In group:{/ts} {$group}
                             </option>
                         {/foreach}
                     </optgroup>
                     <optgroup label="{ts}Mailings{/ts}">
                         {foreach from=$mailings key=mid item=mailing}
-                            <option value="mid-{$mid}" {if in_array("mid-$mid", $form.exclude.value)}selected{/if}>
+                            <option value="mid-{$mid}" {if !empty($form.include.value) && in_array("mid-$mid", $form.exclude.value)}selected{/if}>
                               {ts}Received:{/ts} {$mailing}
                             </option>
                         {/foreach}
                     </optgroup>
                     <optgroup label="{ts}Signatures{/ts}">
                         {foreach from=$campaigns key=cid item=campaign}
-                            <option value="sign-cid-{$cid}" {if in_array("sign-cid-$cid", $form.exclude.value)}selected{/if}>
+                            <option value="sign-cid-{$cid}" {if !empty($form.include.value) && in_array("sign-cid-$cid", $form.exclude.value)}selected{/if}>
                               {ts}Signed:{/ts} {$campaign}
                             </option>
                         {/foreach}
