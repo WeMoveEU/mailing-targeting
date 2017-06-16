@@ -125,6 +125,20 @@ function mailingtargeting_civicrm_alterSettingsFolders(&$metaDataFolders = NULL)
 }
 
 /**
+ * Implements hook_civicrm_searchTasks().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_searchTasks
+ */
+function mailingtargeting_civicrm_searchTasks($objectType, &$tasks) {
+  if ($objectType == 'contact') {
+    $tasks[CRM_Contact_Task::CREATE_MAILING] = array(
+      'title' => ts('Email - send mailing'),
+      'class' => 'CRM_Mailingtargeting_Form_Task_SendMailing',
+    );
+  }
+}
+
+/**
  * Functions below this ship commented out. Uncomment as required.
  *
 
