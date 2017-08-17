@@ -31,7 +31,7 @@ class CRM_Mailingtargeting_Form_Search_MailingTarget extends CRM_Contact_Form_Se
       'sequential' => 1,
       'return' => array("id", "name"),
       'is_completed' => 1,
-      'scheduled_date' => array('>=' => date("Y-m-d", time() - 3 * 30 * 24 * 60 * 60)),
+      'is_archived' => 0,
       'name' => array('NOT LIKE' => "%--CAMP-ID-%"),
       'options' => array('limit' => 1000),
     ));
