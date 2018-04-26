@@ -101,7 +101,8 @@ class CRM_Mailingtargeting_Form_Search_MailingTarget extends CRM_Contact_Form_Se
    */
   function all($offset = 0, $rowcount = 0, $sort = NULL, $includeContactIDs = FALSE, $justIDs = FALSE) {
     // delegate to $this->sql(), $this->select(), $this->from(), $this->where(), etc.
-    return $this->sql($this->select(), $offset, $rowcount, $sort, $includeContactIDs, NULL);
+    $groupBy = 'GROUP BY contact_id';
+    return $this->sql($this->select(), $offset, $rowcount, $sort, $includeContactIDs, $groupBy);
   }
 
   /**
