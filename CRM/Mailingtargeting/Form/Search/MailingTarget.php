@@ -222,7 +222,7 @@ class CRM_Mailingtargeting_Form_Search_MailingTarget extends CRM_Contact_Form_Se
     if (empty($where)) {
       return "1=1";
     } else {
-      return implode(" OR ", $where);
+      return implode(" AND ", $where);
     }
   }
 
