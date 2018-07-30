@@ -268,8 +268,8 @@ class CRM_Mailingtargeting_Form_Search_MailingTarget extends CRM_Contact_Form_Se
   public function buildTaskList(CRM_Core_Form_Search $form) {
     $taskList = parent::buildTaskList($form);
     $toKeep = array(
-      CRM_Contact_Task::GROUP_CONTACTS,
-      CRM_Contact_Task::REMOVE_CONTACTS,
+      CRM_Contact_Task::GROUP_ADD,
+      CRM_Contact_Task::GROUP_REMOVE,
       CRM_Contact_Task::CREATE_MAILING,
     );
     foreach ($taskList as $key => $task) {
