@@ -42,7 +42,7 @@ class CRM_Mailingtargeting_Form_Search_MailingTarget extends CRM_Contact_Form_Se
       'return' => array("id", "title"),
       'is_active' => 1,
       'title' => array('NOT LIKE' => "%--CAMP-ID-%"),
-      'options' => array('limit' => 500),
+      'options' => array('limit' => 700),
     ));
     $form->assign('groups', static::options($groups['values'], 'id', 'title'));
 
