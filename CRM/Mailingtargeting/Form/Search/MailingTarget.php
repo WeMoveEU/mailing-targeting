@@ -46,7 +46,7 @@ class CRM_Mailingtargeting_Form_Search_MailingTarget extends CRM_Contact_Form_Se
     ));
     $form->assign('groups', static::options($groups['values'], 'id', 'title'));
 
-    $form->assign('campaigns', CRM_Campaign_BAO_Campaign::getCampaigns());
+    $form->assign('campaigns', CRM_Campaign_BAO_Campaign::getCampaigns(NULL, NULL, TRUE, FALSE));
 
     $form->add('select', 'include', ts('Include contacts'), NULL, FALSE, array('multiple' => TRUE));
     $form->add('select', 'exclude', ts('Exclude contacts'), NULL, FALSE, array('multiple' => TRUE));
